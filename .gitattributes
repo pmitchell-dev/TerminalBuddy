@@ -1,0 +1,15 @@
+# Default: use LF for all files
+* text=auto eol=lf
+
+# Shell scripts MUST have LF — never CRLF
+*.sh text eol=lf
+
+# Windows-specific overrides
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files
+*.tgz binary
+*.png binary
+*.jpg binary
+*.svg text
