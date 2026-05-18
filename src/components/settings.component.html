@@ -1,0 +1,97 @@
+<div class="tb-settings">
+  <h3 class="tb-settings-title">⚡ TerminalBuddy — Custom Cheat Sheets</h3>
+
+  <!-- Sheet list view -->
+  <div *ngIf="!editingSheet">
+    <p class="tb-settings-hint">
+      Add custom cheat sheets for any terminal program. They take priority over built-in sheets.
+    </p>
+
+    <div class="tb-sheet-list">
+      <div class="tb-sheet-item" *ngFor="let sheet of customSheets; let i = index">
+        <div class="tb-sheet-info">
+          <span class="tb-sheet-name">{{ sheet.title }}</span>
+          <span class="tb-sheet-triggers">
+            <code *ngFor="let t of sheet.triggers">{{ t }}</code>
+          </span>
+        </div>
+        <div class="tb-sheet-actions">
+          <button class="btn-sm btn-edit" (click)="editSheet(sheet)">Edit</button>
+          <button class="btn-sm btn-delete" (click)="deleteSheet(i)">Delete</button>
+        </div>
+      </div>
+
+      <div class="tb-empty-list" *ngIf="customSheets.length === 0">
+        No custom cheat sheets yet.
+      </div>
+    </div>
+
+    <button class="btn-add" (click)="addSheet()">+ Add Cheat Sheet</button>
+  </div>
+
+  <!-- Sheet edit view -->
+  <div *ngIf="editingSheet" class="tb-edit-form">
+    <div class="tb-form-row">
+      <label>Sheet Title</label>
+      <input [(ngModel)]="editingSheet.title" placeholder="e.g. htop" />
+    </div>
+
+    <!-- Triggers -->
+    <div class="tb-form-section">
+      <label>Trigger Commands</label>
+      <p class="tb-form-hint">Commands that activate this sheet (e.g. "htop", "python3")</p>
+      <div class="tb-tags">
+        <span class="tb-tag" *ngFor="let t of editingSheet.triggers; let i = index">
+          {{ t }} <button (click)="removeTrigger(i)">✕</button>
+        </span>
+      </div>
+      <div class="tb-add-row">
+        <input [(ngModel)]="newTriggerInput" placeholder="command name" (keyup.enter)="addTrigger()" />
+        <button class="btn-sm btn-add-inline" (click)="addTrigger()">Add</button>
+      </div>
+    </div>
+
+    <!-- Sections -->
+    <div class="tb-form-section">
+      <label>Sections</label>
+      <div class="tb-section-tabs">
+        <button
+          class="tb-section-tab"
+          [class.active]="activeSection === i"
+          *ngFor="let section of editingSheet.sections; let i = index"
+          (click)="activeSection = i">
+          {{ section.title }}
+        </button>
+        <button class="tb-section-tab tb-add-section" (click)="addSection()">+</button>
+      </div>
+
+      <div class="tb-section-edit" *ngIf="editingSheet.sections[activeSection] as section">
+        <div class="tb-form-row">
+          <label>Section Title</label>
+          <input [(ngModel)]="section.title" placeholder="e.g. Navigation" />
+        </div>
+
+        <div class="tb-key-list">
+          <div class="tb-key-row" *ngFor="let key of section.keys; let ki = index">
+            <code>{{ key.key }}</code>
+            <span>{{ key.description }}</span>
+            <button class="btn-remove" (click)="removeKey(activeSection, ki)">✕</button>
+          </div>
+        </div>
+
+        <div class="tb-add-key-row">
+          <input [(ngModel)]="newKeyInput" placeholder="Key (e.g. Ctrl+C)" />
+          <input [(ngModel)]="newDescInput" placeholder="Description" (keyup.enter)="addKey()" />
+          <button class="btn-sm btn-add-inline" (click)="addKey()">Add</button>
+        </div>
+
+        <button class="btn-sm btn-delete" (click)="removeSection(activeSection)">Remove Section</button>
+      </div>
+    </div>
+
+    <div class="tb-form-actions">
+      <button class="btn-save" (click)="saveSheet()">Save Sheet</button>
+      <button class="btn-cancel" (click)="cancelEdit()">Cancel</button>
+    </div>
+  </div>
+</div>

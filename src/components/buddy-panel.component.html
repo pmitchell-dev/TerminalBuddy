@@ -1,0 +1,51 @@
+<div class="tb-panel" [class.tb-hidden]="!isVisible">
+
+  <!-- Header -->
+  <div class="tb-header">
+    <span class="tb-logo">⚡ TerminalBuddy</span>
+    <button class="tb-toggle" (click)="toggleVisibility()" title="Hide panel">✕</button>
+  </div>
+
+  <!-- CWD bar (shown when we have a path) -->
+  <div class="tb-cwd" *ngIf="currentCwd">
+    <span class="tb-cwd-icon">📍</span>
+    <span class="tb-cwd-path">{{ currentCwd }}</span>
+  </div>
+
+  <!-- IDLE state -->
+  <div class="tb-idle" *ngIf="context.type === 'idle'">
+    <div class="tb-idle-icon">🔌</div>
+    <p>Waiting for shell integration...</p>
+    <p class="tb-hint">Run the install script on your remote machine to get started.</p>
+  </div>
+
+  <!-- DASHBOARD state -->
+  <div class="tb-dashboard" *ngIf="context.type === 'dashboard'">
+    <ng-container *ngIf="dashboardContent; else emptyDashboard">
+      <pre class="tb-dashboard-content">{{ dashboardContent }}</pre>
+    </ng-container>
+    <ng-template #emptyDashboard>
+      <div class="tb-empty">
+        <span>📋</span>
+        <p>No dashboard found.</p>
+        <p class="tb-hint">Create <code>~/dashboard/dashboard.txt</code> on the remote machine.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- CHEATSHEET state — known program -->
+  <div class="tb-cheatsheet-wrap" *ngIf="context.type === 'cheatsheet' && activeSheet">
+    <terminal-buddy-cheatsheet [sheet]="activeSheet"></terminal-buddy-cheatsheet>
+  </div>
+
+  <!-- CHEATSHEET state — unknown program -->
+  <div class="tb-unknown" *ngIf="unknownCmd">
+    <span class="tb-unknown-icon">🔍</span>
+    <p>Running: <strong>{{ unknownCmd }}</strong></p>
+    <p class="tb-hint">No cheat sheet found for this program.<br>Add one in <em>Settings → TerminalBuddy</em>.</p>
+  </div>
+
+</div>
+
+<!-- Show button when panel is hidden -->
+<button class="tb-show-btn" *ngIf="!isVisible" (click)="toggleVisibility()" title="Show TerminalBuddy">⚡</button>

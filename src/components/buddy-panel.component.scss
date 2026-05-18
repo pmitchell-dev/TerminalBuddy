@@ -1,0 +1,180 @@
+// TerminalBuddy Panel Styles
+// Uses Tabby's CSS variable system for theme compatibility
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-family, 'JetBrains Mono', 'Fira Code', monospace);
+  font-size: 12px;
+  color: var(--body-color, #cdd6f4);
+  background: var(--tab-color-bg, #1e1e2e);
+  position: relative;
+}
+
+.tb-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+
+  &.tb-hidden {
+    display: none;
+  }
+}
+
+// ── Header ──────────────────────────────────────────────
+.tb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.tb-logo {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #cba6f7; // Catppuccin Mauve — muted purple, good on dark themes
+  text-transform: uppercase;
+}
+
+.tb-toggle {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  line-height: 1;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+// ── CWD Bar ──────────────────────────────────────────────
+.tb-cwd {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: rgba(203, 166, 247, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+
+  .tb-cwd-icon { font-size: 10px; }
+
+  .tb-cwd-path {
+    font-size: 10px;
+    color: #a6e3a1; // green — path feels like success
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    font-family: inherit;
+  }
+}
+
+// ── Idle / Empty / Unknown states ───────────────────────
+.tb-idle,
+.tb-empty,
+.tb-unknown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+  padding: 20px;
+  color: rgba(255, 255, 255, 0.35);
+  gap: 6px;
+
+  .tb-idle-icon,
+  .tb-unknown-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.5;
+    font-size: 11px;
+  }
+
+  strong {
+    color: #f38ba8; // red — flags the unknown program name
+  }
+
+  code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+}
+
+.tb-hint {
+  font-size: 10px;
+  opacity: 0.6;
+  em { font-style: normal; color: #cba6f7; }
+}
+
+// ── Dashboard ───────────────────────────────────────────
+.tb-dashboard {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+}
+
+.tb-dashboard-content {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+// ── Cheatsheet wrapper ──────────────────────────────────
+.tb-cheatsheet-wrap {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Show button (when panel is hidden) ──────────────────
+.tb-show-btn {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  background: #cba6f7;
+  color: #1e1e2e;
+  border: none;
+  border-radius: 6px 0 0 6px;
+  padding: 8px 4px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  z-index: 100;
+  writing-mode: vertical-rl;
+
+  &:hover {
+    background: #d4bbff;
+  }
+}

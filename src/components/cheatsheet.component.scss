@@ -1,0 +1,85 @@
+.cs-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-family, 'JetBrains Mono', monospace);
+  font-size: 12px;
+}
+
+.cs-title {
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #89dceb; // cyan — distinct from the header purple
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .cs-title-icon { font-size: 13px; }
+}
+
+.cs-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 0;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+}
+
+.cs-section {
+  padding: 8px 0 4px;
+
+  & + .cs-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}
+
+.cs-section-title {
+  padding: 0 10px 4px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.cs-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 10px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.cs-key {
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  color: #cba6f7;           // purple key badges
+  background: rgba(203, 166, 247, 0.12);
+  border: 1px solid rgba(203, 166, 247, 0.25);
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 52px;
+  text-align: center;
+}
+
+.cs-desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.4;
+  flex: 1;
+}

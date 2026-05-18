@@ -1,0 +1,20 @@
+<div class="cs-wrap">
+
+  <!-- Sheet title -->
+  <div class="cs-title">
+    <span class="cs-title-icon">📖</span>
+    {{ sheet.title }}
+  </div>
+
+  <!-- Sections -->
+  <div class="cs-scroll">
+    <div class="cs-section" *ngFor="let section of sheet.sections">
+      <div class="cs-section-title">{{ section.title }}</div>
+      <div class="cs-row" *ngFor="let item of section.keys">
+        <span class="cs-key">{{ item.key }}</span>
+        <span class="cs-desc">{{ item.description }}</span>
+      </div>
+    </div>
+  </div>
+
+</div>
