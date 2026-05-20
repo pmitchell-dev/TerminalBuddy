@@ -12,7 +12,6 @@
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   font-family: var(--font-family, 'JetBrains Mono', 'Fira Code', monospace);
   font-size: 12px;
   color: var(--body-color, #cdd6f4);
@@ -36,8 +35,8 @@
 .tb-resizer {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 8px;
+  left: -5px;
+  width: 10px;
   height: 100%;
   cursor: ew-resize;
   background: transparent;
@@ -49,6 +48,7 @@
     border-left: 2px solid #cba6f7;
   }
 }
+
 
 
 

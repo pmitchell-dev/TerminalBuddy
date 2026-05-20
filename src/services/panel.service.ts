@@ -61,7 +61,6 @@ export class PanelService {
         'z-index: 9999',
         'display: flex',
         'flex-direction: column',
-        'overflow: hidden',
         'background: var(--theme-bg-more-2, #181825)',
         'border-left: 1px solid rgba(255,255,255,0.1)',
         'box-shadow: -4px 0 20px rgba(0,0,0,0.5)',
@@ -69,6 +68,7 @@ export class PanelService {
         'font-family: "JetBrains Mono", "Fira Code", monospace',
         'font-size: 12px',
       ].join(';')
+
 
 
       document.body.appendChild(domElem)
