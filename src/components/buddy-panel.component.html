@@ -4,7 +4,8 @@
      (mousedown)="onResizeStart($event)"></div>
 
 
-<div class="tb-panel" [class.tb-hidden]="!isVisible">
+<div class="tb-panel {{ currentSizeClass }}" [class.tb-hidden]="!isVisible">
+
 
 
 

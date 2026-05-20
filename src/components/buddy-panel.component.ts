@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, AfterViewInit, ViewEncapsulation } from '@angular/core'
+import { Component, OnInit, OnDestroy, ElementRef, AfterViewInit, ViewEncapsulation, NgZone } from '@angular/core'
 import { Subscription } from 'rxjs'
 import { ContextService, BuddyContext } from '../services/context.service'
 import { CheatsheetService } from '../services/cheatsheet.service'
@@ -10,12 +10,12 @@ import { CheatSheet } from '../data/cheatsheet.model'
   styles: [require('./buddy-panel.component.scss')],
   encapsulation: ViewEncapsulation.None,
 })
-
 export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
   context: BuddyContext = { type: 'idle' }
   activeSheet: CheatSheet | null = null
   isVisible = true
   isResizing = false
+  currentSizeClass = 'tb-size-medium'
 
   private sub?: Subscription
 
@@ -23,12 +23,26 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
     private el: ElementRef,
     private contextService: ContextService,
     private cheatsheetService: CheatsheetService,
+    private zone: NgZone,
   ) {}
+
+  updateSizeClass (width: number): void {
+    if (width < 300) {
+      this.currentSizeClass = 'tb-size-narrow'
+    } else if (width < 500) {
+      this.currentSizeClass = 'tb-size-medium'
+    } else {
+      this.currentSizeClass = 'tb-size-wide'
+    }
+  }
 
   ngAfterViewInit (): void {
     setTimeout(() => {
       try {
         const hostEl = this.el.nativeElement as HTMLElement
+        const savedWidth = parseInt(localStorage.getItem('tb-panel-width') || '320')
+        this.updateSizeClass(savedWidth)
+
         const resEl = hostEl.querySelector('.tb-resizer') as HTMLElement
         if (resEl) {
           console.log('[TerminalBuddy] Resizer bounding box:', resEl.getBoundingClientRect())
@@ -43,7 +57,6 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     }, 1000)
   }
-
 
   onResizeStart (event: MouseEvent): void {
     console.log('[TerminalBuddy] onResizeStart triggered', event)
@@ -62,6 +75,10 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
       console.log('[TerminalBuddy] Dragging. deltaX:', deltaX, 'newWidth:', newWidth)
       hostEl.style.width = `${newWidth}px`
       localStorage.setItem('tb-panel-width', `${newWidth}`)
+
+      this.zone.run(() => {
+        this.updateSizeClass(newWidth)
+      })
     }
 
     const onMouseUp = () => {
@@ -74,6 +91,7 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
   }
+
 
 
 
