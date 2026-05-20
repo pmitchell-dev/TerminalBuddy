@@ -39,27 +39,15 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit (): void {
     setTimeout(() => {
       try {
-        const hostEl = this.el.nativeElement as HTMLElement
         const savedWidth = parseInt(localStorage.getItem('tb-panel-width') || '320')
         this.updateSizeClass(savedWidth)
-
-        const resEl = hostEl.querySelector('.tb-resizer') as HTMLElement
-        if (resEl) {
-          console.log('[TerminalBuddy] Resizer bounding box:', resEl.getBoundingClientRect())
-          console.log('[TerminalBuddy] Host bounding box:', hostEl.getBoundingClientRect())
-          const computedStyle = window.getComputedStyle(resEl)
-          console.log('[TerminalBuddy] Resizer computed styles - position:', computedStyle.position, 'z-index:', computedStyle.zIndex, 'left:', computedStyle.left, 'width:', computedStyle.width, 'height:', computedStyle.height)
-        } else {
-          console.error('[TerminalBuddy] Resizer element not found in DOM!')
-        }
       } catch (err) {
-        console.error('[TerminalBuddy] Error in ngAfterViewInit:', err)
+        // Keep silent on minor init errors
       }
     }, 1000)
   }
 
   onResizeStart (event: MouseEvent): void {
-    console.log('[TerminalBuddy] onResizeStart triggered', event)
     event.preventDefault()
     this.isResizing = true
 
@@ -67,12 +55,10 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
     const hostEl = this.el.nativeElement as HTMLElement
     const startWidth = hostEl.getBoundingClientRect().width
     const startX = event.clientX
-    console.log('[TerminalBuddy] startWidth:', startWidth, 'startX:', startX)
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = moveEvent.clientX - startX
       const newWidth = Math.max(200, Math.min(1000, startWidth - deltaX))
-      console.log('[TerminalBuddy] Dragging. deltaX:', deltaX, 'newWidth:', newWidth)
       hostEl.style.width = `${newWidth}px`
       localStorage.setItem('tb-panel-width', `${newWidth}`)
 
@@ -82,7 +68,6 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     const onMouseUp = () => {
-      console.log('[TerminalBuddy] Dragging complete. Final width:', hostEl.style.width)
       this.isResizing = false
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
@@ -91,6 +76,7 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
   }
+
 
 
 
