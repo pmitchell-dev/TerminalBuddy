@@ -1,4 +1,8 @@
-<div class="tb-resizer" [class.tb-resizing]="isResizing" (mousedown)="onResizeStart($event)"></div>
+<div class="tb-resizer"
+     [class.tb-resizing]="isResizing"
+     style="position: absolute; top: 0; left: -5px; width: 10px; height: 100%; cursor: ew-resize; background: transparent; z-index: 10000;"
+     (mousedown)="onResizeStart($event)"></div>
+
 
 <div class="tb-panel" [class.tb-hidden]="!isVisible">
 

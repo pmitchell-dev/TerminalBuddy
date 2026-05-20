@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, AfterViewInit } from '@angular/core'
+import { Component, OnInit, OnDestroy, ElementRef, AfterViewInit, ViewEncapsulation } from '@angular/core'
 import { Subscription } from 'rxjs'
 import { ContextService, BuddyContext } from '../services/context.service'
 import { CheatsheetService } from '../services/cheatsheet.service'
@@ -8,7 +8,9 @@ import { CheatSheet } from '../data/cheatsheet.model'
   selector: 'terminal-buddy-panel',
   template: require('./buddy-panel.component.html'),
   styles: [require('./buddy-panel.component.scss')],
+  encapsulation: ViewEncapsulation.None,
 })
+
 export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
   context: BuddyContext = { type: 'idle' }
   activeSheet: CheatSheet | null = null
