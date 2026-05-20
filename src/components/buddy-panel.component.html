@@ -12,7 +12,7 @@
   <!-- Header -->
   <div class="tb-header">
     <span class="tb-logo">⚡ TerminalBuddy</span>
-    <button class="tb-toggle" (click)="toggleVisibility()" title="Hide panel">✕</button>
+    <button class="tb-toggle" (click)="close()" title="Hide panel">✕</button>
   </div>
 
   <!-- CWD bar (shown when we have a path) -->
@@ -55,6 +55,3 @@
   </div>
 
 </div>
-
-<!-- Show button when panel is hidden -->
-<button class="tb-show-btn" *ngIf="!isVisible" (click)="toggleVisibility()" title="Show TerminalBuddy">⚡</button>

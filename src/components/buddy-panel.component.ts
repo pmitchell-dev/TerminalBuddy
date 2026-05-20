@@ -96,8 +96,10 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
     this.sub?.unsubscribe()
   }
 
-  toggleVisibility (): void {
-    this.isVisible = !this.isVisible
+  close (): void {
+    this.isVisible = false
+    const hostEl = this.el.nativeElement as HTMLElement
+    hostEl.style.display = 'none'
   }
 
   get currentCwd (): string {

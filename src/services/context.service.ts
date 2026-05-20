@@ -23,6 +23,8 @@ const OSC_REGEX = /\x1b\]7701;([^\x07\x1b]*?)(?:\x07|\x1b\\)/g
 export class ContextService {
   readonly context$ = new BehaviorSubject<BuddyContext>({ type: 'idle' })
   private currentCleanup: (() => void) | null = null
+  private tabContexts = new WeakMap<any, BuddyContext>()
+  private lastActiveTab: any = null
 
   constructor (private app: AppService, private zone: NgZone) {
     this.app.activeTabChange$.subscribe(() => this.onTabChange())
@@ -30,18 +32,7 @@ export class ContextService {
   }
 
   private onTabChange (): void {
-    // Perform cleanup of any previous subscriptions
-    if (this.currentCleanup) {
-      try { this.currentCleanup() } catch {}
-      this.currentCleanup = null
-    }
-
     let tab = this.app.activeTab
-    if (!tab) {
-      this.zone.run(() => this.context$.next({ type: 'idle' }))
-      return
-    }
-
     const cleanups: (() => void)[] = []
 
     // Recursively resolve the active sub-tab if we are inside a SplitTabComponent.
@@ -55,28 +46,44 @@ export class ContextService {
       tab = splitTab.focusedTab
     }
 
+    if (tab !== this.lastActiveTab) {
+      // Perform cleanup of any previous subscriptions
+      if (this.currentCleanup) {
+        try { this.currentCleanup() } catch {}
+        this.currentCleanup = null
+      }
+
+      this.lastActiveTab = tab
+
+      // Restore the context of the newly active tab
+      const restoredContext = tab ? (this.tabContexts.get(tab) ?? { type: 'idle' as const }) : { type: 'idle' as const }
+      this.zone.run(() => this.context$.next(restoredContext))
+    }
+
     if (!tab) {
+      const origCleanup = this.currentCleanup
       this.currentCleanup = () => {
+        if (origCleanup) { try { origCleanup() } catch {} }
         for (const cleanup of cleanups) cleanup()
       }
-      this.zone.run(() => this.context$.next({ type: 'idle' }))
       return
     }
 
     // Check if the resolved leaf tab is a terminal tab
     const isTerminalTab = 'frontendReady$' in tab || 'sessionChanged$' in tab
     if (!isTerminalTab) {
+      const origCleanup = this.currentCleanup
       this.currentCleanup = () => {
+        if (origCleanup) { try { origCleanup() } catch {} }
         for (const cleanup of cleanups) cleanup()
       }
-      this.zone.run(() => this.context$.next({ type: 'idle' }))
       return
     }
 
     // Try to bind to the xterm instance
     const xterm = (tab as any)?.frontend?.xterm
     if (xterm) {
-      this.bindToTerminal(xterm)
+      this.bindToTerminal(xterm, tab)
       const origCleanup = this.currentCleanup
       this.currentCleanup = () => {
         if (origCleanup) { try { origCleanup() } catch {} }
@@ -86,7 +93,7 @@ export class ContextService {
       const sub = (tab as any).frontendReady$.subscribe(() => {
         const freshXterm = (tab as any)?.frontend?.xterm
         if (freshXterm) {
-          this.bindToTerminal(freshXterm)
+          this.bindToTerminal(freshXterm, tab)
           const origCleanup = this.currentCleanup
           this.currentCleanup = () => {
             if (origCleanup) { try { origCleanup() } catch {} }
@@ -94,19 +101,22 @@ export class ContextService {
           }
         }
       })
+      const origCleanup = this.currentCleanup
       this.currentCleanup = () => {
+        if (origCleanup) { try { origCleanup() } catch {} }
         sub.unsubscribe()
         for (const cleanup of cleanups) cleanup()
       }
     } else {
+      const origCleanup = this.currentCleanup
       this.currentCleanup = () => {
+        if (origCleanup) { try { origCleanup() } catch {} }
         for (const cleanup of cleanups) cleanup()
       }
-      this.zone.run(() => this.context$.next({ type: 'idle' }))
     }
   }
 
-  private bindToTerminal (xterm: any): void {
+  private bindToTerminal (xterm: any, tab: any): void {
     if (this.currentCleanup) {
       try { this.currentCleanup() } catch {}
       this.currentCleanup = null
@@ -115,7 +125,7 @@ export class ContextService {
     // ── Strategy 1: xterm.js native OSC handler ────────────────────────────
     if (typeof xterm.parser?.registerOscHandler === 'function') {
       const disposable = xterm.parser.registerOscHandler(OSC_ID, (data: string) => {
-        this.handlePayload(data)
+        this.handlePayload(tab, data)
         return false
       })
       this.currentCleanup = () => {
@@ -133,35 +143,40 @@ export class ContextService {
           : data instanceof Uint8Array
             ? new TextDecoder().decode(data)
             : null
-        if (str) this.parseOscSequences(str)
+        if (str) this.parseOscSequences(tab, str)
       } catch {}
       return origWrite(data, callback)
     }
     this.currentCleanup = () => { xterm.write = origWrite }
   }
 
-  private parseOscSequences (data: string): void {
+  private parseOscSequences (tab: any, data: string): void {
     OSC_REGEX.lastIndex = 0
     let match: RegExpExecArray | null
     while ((match = OSC_REGEX.exec(data)) !== null) {
-      this.handlePayload(match[1])
+      this.handlePayload(tab, match[1])
     }
   }
 
-  private handlePayload (payload: string): void {
+  private handlePayload (tab: any, payload: string): void {
+    let newContext: BuddyContext | null = null
+
     if (payload.startsWith('cmd=')) {
       const cmd = payload.slice(4).trim()
-      this.zone.run(() => this.context$.next({ type: 'cheatsheet', cmd }))
-      return
-    }
-
-    if (payload.startsWith('prompt')) {
+      newContext = { type: 'cheatsheet', cmd }
+    } else if (payload.startsWith('prompt')) {
       const parts = this.parseKV(payload)
       const cwd = parts['cwd'] ?? ''
       const b64 = parts['dashboard'] ?? ''
       const content = b64 ? this.decodeBase64(b64) : ''
-      this.zone.run(() => this.context$.next({ type: 'dashboard', cwd, content }))
-      return
+      newContext = { type: 'dashboard', cwd, content }
+    }
+
+    if (newContext) {
+      this.tabContexts.set(tab, newContext)
+      if (this.lastActiveTab === tab) {
+        this.zone.run(() => this.context$.next(newContext!))
+      }
     }
   }
 

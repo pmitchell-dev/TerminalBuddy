@@ -186,27 +186,6 @@
   flex-direction: column;
 }
 
-// ── Show button (when panel is hidden) ──────────────────
-.tb-show-btn {
-  position: fixed;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  background: #cba6f7;
-  color: #1e1e2e;
-  border: none;
-  border-radius: 6px 0 0 6px;
-  padding: 8px 4px;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  z-index: 100;
-  writing-mode: vertical-rl;
-
-  &:hover {
-    background: #d4bbff;
-  }
-}
 
 // ── Responsive Layout & Text Sizing ──────────────────────
 
