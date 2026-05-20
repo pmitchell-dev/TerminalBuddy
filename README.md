@@ -12,7 +12,10 @@ The panel automatically switches between:
 
 ## Screenshots
 
-> *(Coming soon)*
+| 🖥️ Companion Dashboard | 📋 VI/Vim Cheat Sheet | ⚙️ Custom Cheat Sheets |
+|:---:|:---:|:---:|
+| ![Companion Dashboard](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-19_10-45-24_PM_00993c.png) | ![Vim Cheat Sheet](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-19_10-46-24_PM_3a8698.png) | ![Settings](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-19_10-46-56_PM_d84151.png) |
+
 
 ---
 
