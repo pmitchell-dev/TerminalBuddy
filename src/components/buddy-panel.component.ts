@@ -24,6 +24,7 @@ export class BuddyPanelComponent implements OnInit, OnDestroy {
   ) {}
 
   onResizeStart (event: MouseEvent): void {
+    console.log('[TerminalBuddy] onResizeStart triggered', event)
     event.preventDefault()
     this.isResizing = true
 
@@ -31,15 +32,18 @@ export class BuddyPanelComponent implements OnInit, OnDestroy {
     const hostEl = this.el.nativeElement as HTMLElement
     const startWidth = hostEl.getBoundingClientRect().width
     const startX = event.clientX
+    console.log('[TerminalBuddy] startWidth:', startWidth, 'startX:', startX)
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = moveEvent.clientX - startX
       const newWidth = Math.max(200, Math.min(1000, startWidth - deltaX))
+      console.log('[TerminalBuddy] Dragging. deltaX:', deltaX, 'newWidth:', newWidth)
       hostEl.style.width = `${newWidth}px`
       localStorage.setItem('tb-panel-width', `${newWidth}`)
     }
 
     const onMouseUp = () => {
+      console.log('[TerminalBuddy] Dragging complete. Final width:', hostEl.style.width)
       this.isResizing = false
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
@@ -48,6 +52,7 @@ export class BuddyPanelComponent implements OnInit, OnDestroy {
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
   }
+
 
 
   ngOnInit (): void {

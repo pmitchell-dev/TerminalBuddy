@@ -37,7 +37,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 6px;
+  width: 8px;
   height: 100%;
   cursor: ew-resize;
   background: transparent;
@@ -45,9 +45,11 @@
   transition: background 0.15s;
 
   &:hover, &.tb-resizing {
-    background: rgba(203, 166, 247, 0.35); /* Catppuccin Mauve resize highlight */
+    background: rgba(203, 166, 247, 0.25); /* Catppuccin Mauve resize highlight */
+    border-left: 2px solid #cba6f7;
   }
 }
+
 
 
 
