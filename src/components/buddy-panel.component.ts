@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef } from '@angular/core'
+import { Component, OnInit, OnDestroy, ElementRef, AfterViewInit } from '@angular/core'
 import { Subscription } from 'rxjs'
 import { ContextService, BuddyContext } from '../services/context.service'
 import { CheatsheetService } from '../services/cheatsheet.service'
@@ -9,7 +9,7 @@ import { CheatSheet } from '../data/cheatsheet.model'
   template: require('./buddy-panel.component.html'),
   styles: [require('./buddy-panel.component.scss')],
 })
-export class BuddyPanelComponent implements OnInit, OnDestroy {
+export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
   context: BuddyContext = { type: 'idle' }
   activeSheet: CheatSheet | null = null
   isVisible = true
@@ -22,6 +22,26 @@ export class BuddyPanelComponent implements OnInit, OnDestroy {
     private contextService: ContextService,
     private cheatsheetService: CheatsheetService,
   ) {}
+
+  ngAfterViewInit (): void {
+    setTimeout(() => {
+      try {
+        const hostEl = this.el.nativeElement as HTMLElement
+        const resEl = hostEl.querySelector('.tb-resizer') as HTMLElement
+        if (resEl) {
+          console.log('[TerminalBuddy] Resizer bounding box:', resEl.getBoundingClientRect())
+          console.log('[TerminalBuddy] Host bounding box:', hostEl.getBoundingClientRect())
+          const computedStyle = window.getComputedStyle(resEl)
+          console.log('[TerminalBuddy] Resizer computed styles - position:', computedStyle.position, 'z-index:', computedStyle.zIndex, 'left:', computedStyle.left, 'width:', computedStyle.width, 'height:', computedStyle.height)
+        } else {
+          console.error('[TerminalBuddy] Resizer element not found in DOM!')
+        }
+      } catch (err) {
+        console.error('[TerminalBuddy] Error in ngAfterViewInit:', err)
+      }
+    }, 1000)
+  }
+
 
   onResizeStart (event: MouseEvent): void {
     console.log('[TerminalBuddy] onResizeStart triggered', event)
