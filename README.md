@@ -14,7 +14,7 @@ The panel automatically switches between:
 
 | 🖥️ Companion Dashboard | 📋 VI/Vim Cheat Sheet | ⚙️ Custom Cheat Sheets |
 |:---:|:---:|:---:|
-| ![Companion Dashboard](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-19_10-45-24_PM_00993c.png) | ![Vim Cheat Sheet](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-19_10-46-24_PM_3a8698.png) | ![Settings](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-19_10-46-56_PM_d84151.png) |
+| ![Companion Dashboard](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-20_08-50-11_AM_32ac6c.png) | ![Vim Cheat Sheet](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-20_08-51-15_AM_7703f6.png) | ![Settings](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-20_08-51-39_AM_dceccc.png) |
 
 
 ---
