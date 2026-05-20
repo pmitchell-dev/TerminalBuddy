@@ -1,6 +1,9 @@
-// Type stubs for tabby-core
+// Type stubs for tabby-core and tabby-settings.
 // These are the minimal type declarations needed for TypeScript compilation.
 // The actual implementations are provided at runtime by Tabby itself.
+//
+// IMPORTANT: These must match the REAL runtime, not just what makes TS happy.
+// Verified against C:\Program Files\Tabby\resources\builtin-plugins\tabby-*/dist/index.js
 
 declare module 'tabby-core' {
   import { InjectionToken, Type } from '@angular/core'
@@ -27,19 +30,11 @@ declare module 'tabby-core' {
   }
 
   export class AppService {
-    activeTab: BaseTabComponent | null
-    activeTabChange$: Observable<BaseTabComponent | null>
+    activeTab: any
+    activeTabChange$: Observable<any>
+    /** Opens a tab of a specific type (e.g. SettingsTabComponent) */
+    openNewTabRaw(params: { type: any; inputs?: Record<string, any> }): Promise<any>
     openNewTabWith(options: any): void
-  }
-
-  export abstract class BaseTabComponent {
-    title: string
-    titleChange: Subject<string>
-  }
-
-  export abstract class BaseTerminalTabComponent extends BaseTabComponent {
-    terminal: any
-    output$: Observable<string>
   }
 
   export class ConfigService {
@@ -52,9 +47,15 @@ declare module 'tabby-settings' {
   import { Type } from '@angular/core'
 
   export abstract class SettingsTabProvider {
-    abstract id: string
-    abstract icon: string
-    abstract title: string
-    abstract component: Type<any>
+    id: string
+    icon: string
+    title: string
+    weight: number
+    prioritized: boolean
+    /** Must be overridden to return your settings component class */
+    getComponentType(): Type<any> | null
   }
+
+  /** The component type for Tabby's Settings tab window */
+  export class SettingsTabComponent {}
 }

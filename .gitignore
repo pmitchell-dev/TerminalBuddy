@@ -5,3 +5,5 @@ dist/
 Thumbs.db
 *.tgz
 .env
+
+tabby_extracted/

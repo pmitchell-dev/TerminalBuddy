@@ -2,15 +2,23 @@
 // Uses Tabby's CSS variable system for theme compatibility
 
 :host {
+  // Fixed right-side drawer — sits on top of Tabby's content area.
+  // The component is appended to document.body so position:fixed is required.
+  position: fixed;
+  top: 38px;       // below Tabby's tab bar (approx height)
+  right: 0;
+  width: 280px;
+  height: calc(100vh - 38px);
+  z-index: 1000;
   display: flex;
   flex-direction: column;
-  height: 100%;
   overflow: hidden;
   font-family: var(--font-family, 'JetBrains Mono', 'Fira Code', monospace);
   font-size: 12px;
   color: var(--body-color, #cdd6f4);
-  background: var(--tab-color-bg, #1e1e2e);
-  position: relative;
+  background: var(--theme-bg-more-2, #181825);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.4);
 }
 
 .tb-panel {
@@ -18,11 +26,30 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  position: relative;
 
   &.tb-hidden {
     display: none;
   }
 }
+
+.tb-resizer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  cursor: ew-resize;
+  background: transparent;
+  z-index: 10000;
+  transition: background 0.15s;
+
+  &:hover, &.tb-resizing {
+    background: rgba(203, 166, 247, 0.35); /* Catppuccin Mauve resize highlight */
+  }
+}
+
+
 
 // ── Header ──────────────────────────────────────────────
 .tb-header {

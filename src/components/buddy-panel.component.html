@@ -1,4 +1,7 @@
 <div class="tb-panel" [class.tb-hidden]="!isVisible">
+  <!-- Draggable Resizer Handle -->
+  <div class="tb-resizer" [class.tb-resizing]="isResizing" (mousedown)="onResizeStart($event)"></div>
+
 
   <!-- Header -->
   <div class="tb-header">
