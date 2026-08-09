@@ -24,8 +24,15 @@
   <!-- IDLE state -->
   <div class="tb-idle" *ngIf="context.type === 'idle'">
     <div class="tb-idle-icon">🔌</div>
-    <p>Waiting for shell integration...</p>
-    <p class="tb-hint">Run the install script on your remote machine to get started.</p>
+    <p class="tb-idle-title">Waiting for Shell Integration</p>
+    <p class="tb-hint">Run this remote shell integration one-liner on each Linux machine:</p>
+    <div class="tb-code-box">
+      <code class="tb-code-text">curl -sSL https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/shell-integration/install.sh | bash</code>
+      <button class="tb-copy-btn" (click)="copyInstallCommand()" [title]="copiedInstallCmd ? 'Copied!' : 'Copy command'">
+        {{ copiedInstallCmd ? '✓ Copied' : '📋 Copy' }}
+      </button>
+    </div>
+    <p class="tb-hint tb-subhint">Then reload your shell: <code>source ~/.bashrc</code></p>
   </div>
 
   <!-- DASHBOARD state -->
@@ -35,9 +42,18 @@
     </ng-container>
     <ng-template #emptyDashboard>
       <div class="tb-empty">
-        <span>📋</span>
-        <p>No dashboard found.</p>
-        <p class="tb-hint">Create <code>~/dashboard/dashboard.txt</code> on the remote machine.</p>
+        <span class="tb-empty-icon">📋</span>
+        <p class="tb-empty-title">No Dashboard Found</p>
+        <p class="tb-hint">Create <code>~/dashboard/dashboard.txt</code> on your remote machine to display custom info.</p>
+        <div class="tb-setup-section">
+          <p class="tb-sublabel">Remote Shell Integration (one-liner):</p>
+          <div class="tb-code-box">
+            <code class="tb-code-text">curl -sSL https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/shell-integration/install.sh | bash</code>
+            <button class="tb-copy-btn" (click)="copyInstallCommand()" [title]="copiedInstallCmd ? 'Copied!' : 'Copy command'">
+              {{ copiedInstallCmd ? '✓ Copied' : '📋 Copy' }}
+            </button>
+          </div>
+        </div>
       </div>
     </ng-template>
   </div>

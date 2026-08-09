@@ -3,10 +3,20 @@ import { ConfigService } from 'tabby-core'
 import { CheatSheet } from '../data/cheatsheet.model'
 import { VI_CHEATSHEET } from '../data/vi.cheatsheet'
 import { NANO_CHEATSHEET } from '../data/nano.cheatsheet'
+import { TAR_CHEATSHEET } from '../data/tar.cheatsheet'
+import { FIND_CHEATSHEET } from '../data/find.cheatsheet'
+import { GREP_CHEATSHEET } from '../data/grep.cheatsheet'
+import { SYSTEMCTL_CHEATSHEET } from '../data/systemctl.cheatsheet'
+import { CHMOD_CHEATSHEET } from '../data/chmod.cheatsheet'
 
 const BUILT_IN_SHEETS: CheatSheet[] = [
   VI_CHEATSHEET,
   NANO_CHEATSHEET,
+  TAR_CHEATSHEET,
+  FIND_CHEATSHEET,
+  GREP_CHEATSHEET,
+  SYSTEMCTL_CHEATSHEET,
+  CHMOD_CHEATSHEET,
 ]
 
 /**

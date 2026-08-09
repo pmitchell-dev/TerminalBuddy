@@ -16,6 +16,7 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
   isVisible = true
   isResizing = false
   currentSizeClass = 'tb-size-medium'
+  copiedInstallCmd = false
 
   private sub?: Subscription
 
@@ -25,6 +26,20 @@ export class BuddyPanelComponent implements OnInit, OnDestroy, AfterViewInit {
     private cheatsheetService: CheatsheetService,
     private zone: NgZone,
   ) {}
+
+  copyInstallCommand (): void {
+    const cmd = 'curl -sSL https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/shell-integration/install.sh | bash'
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(cmd).then(() => {
+        this.zone.run(() => {
+          this.copiedInstallCmd = true
+          setTimeout(() => {
+            this.copiedInstallCmd = false
+          }, 2000)
+        })
+      }).catch(() => {})
+    }
+  }
 
   updateSizeClass (width: number): void {
     if (width < 300) {

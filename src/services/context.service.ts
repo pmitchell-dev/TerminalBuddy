@@ -1,6 +1,7 @@
 import { Injectable, NgZone } from '@angular/core'
 import { BehaviorSubject } from 'rxjs'
 import { AppService } from 'tabby-core'
+import { CheatsheetService } from './cheatsheet.service'
 
 export type BuddyContext =
   | { type: 'dashboard'; cwd: string; content: string }
@@ -24,15 +25,22 @@ export class ContextService {
   readonly context$ = new BehaviorSubject<BuddyContext>({ type: 'idle' })
   private currentCleanup: (() => void) | null = null
   private tabContexts = new WeakMap<any, BuddyContext>()
+  private tabOscContexts = new WeakMap<any, BuddyContext>()
   private lastActiveTab: any = null
+  private lastOscContext: BuddyContext = { type: 'idle' }
 
-  constructor (private app: AppService, private zone: NgZone) {
+  constructor (
+    private app: AppService,
+    private zone: NgZone,
+    private cheatsheetService: CheatsheetService,
+  ) {
     this.app.activeTabChange$.subscribe(() => this.onTabChange())
     this.onTabChange()
   }
 
   private onTabChange (): void {
     let tab = this.app.activeTab
+    console.log('TerminalBuddy Debug - onTabChange called. activeTab:', tab ? tab.constructor.name : 'none')
     const cleanups: (() => void)[] = []
 
     // Recursively resolve the active sub-tab if we are inside a SplitTabComponent.
@@ -57,6 +65,7 @@ export class ContextService {
 
       // Restore the context of the newly active tab
       const restoredContext = tab ? (this.tabContexts.get(tab) ?? { type: 'idle' as const }) : { type: 'idle' as const }
+      this.lastOscContext = tab ? (this.tabOscContexts.get(tab) ?? { type: 'idle' as const }) : { type: 'idle' as const }
       this.zone.run(() => this.context$.next(restoredContext))
     }
 
@@ -117,24 +126,28 @@ export class ContextService {
   }
 
   private bindToTerminal (xterm: any, tab: any): void {
+    console.log('TerminalBuddy Debug - bindToTerminal called. tab type:', tab ? tab.constructor.name : 'none', 'has xterm:', !!xterm)
     if (this.currentCleanup) {
       try { this.currentCleanup() } catch {}
       this.currentCleanup = null
     }
 
+    const cleanups: (() => void)[] = []
+
     // ── Strategy 1: xterm.js native OSC handler ────────────────────────────
+    let oscHooked = false
     if (typeof xterm.parser?.registerOscHandler === 'function') {
       const disposable = xterm.parser.registerOscHandler(OSC_ID, (data: string) => {
         this.handlePayload(tab, data)
         return false
       })
-      this.currentCleanup = () => {
+      cleanups.push(() => {
         try { disposable?.dispose?.() } catch {}
-      }
-      return
+      })
+      oscHooked = true
     }
 
-    // ── Strategy 2: Hook xterm.write() ─────────────────────────────────
+    // ── Hook xterm.write to handle OSC fallback and check active line ──────
     const origWrite = xterm.write.bind(xterm)
     xterm.write = (data: string | Uint8Array, callback?: () => void) => {
       try {
@@ -143,11 +156,33 @@ export class ContextService {
           : data instanceof Uint8Array
             ? new TextDecoder().decode(data)
             : null
-        if (str) this.parseOscSequences(tab, str)
+        
+        if (str && !oscHooked) {
+          this.parseOscSequences(tab, str)
+        }
+
+        // Check active line on screen updates
+        setTimeout(() => this.checkCurrentLine(xterm, tab), 20)
       } catch {}
       return origWrite(data, callback)
     }
-    this.currentCleanup = () => { xterm.write = origWrite }
+    cleanups.push(() => { xterm.write = origWrite })
+
+    // ── Listen to keyboard inputs for immediate response ───────────────────
+    if (typeof xterm.onData === 'function') {
+      const disposable = xterm.onData(() => {
+        setTimeout(() => this.checkCurrentLine(xterm, tab), 20)
+      })
+      cleanups.push(() => {
+        try { disposable?.dispose?.() } catch {}
+      })
+    }
+
+    this.currentCleanup = () => {
+      for (const cleanup of cleanups) {
+        try { cleanup() } catch {}
+      }
+    }
   }
 
   private parseOscSequences (tab: any, data: string): void {
@@ -173,10 +208,60 @@ export class ContextService {
     }
 
     if (newContext) {
+      this.tabOscContexts.set(tab, newContext)
       this.tabContexts.set(tab, newContext)
       if (this.lastActiveTab === tab) {
+        this.lastOscContext = newContext
         this.zone.run(() => this.context$.next(newContext!))
       }
+    }
+  }
+
+  private checkCurrentLine (xterm: any, tab: any): void {
+    console.log('TerminalBuddy Debug - checkCurrentLine entered. lastOscContext:', JSON.stringify(this.lastOscContext))
+    if (this.lastOscContext?.type !== 'dashboard') {
+      return
+    }
+
+    try {
+      const buffer = xterm.buffer?.active
+      if (!buffer) return
+
+      const absoluteY = buffer.baseY + buffer.cursorY
+      const line = buffer.getLine(absoluteY)
+      if (!line) return
+
+      const lineText = line.translateToString(true)
+      console.log('TerminalBuddy Debug - lineText:', JSON.stringify(lineText))
+
+      // Split the line on common prompt symbols to find the input command
+      const parts = lineText.split(/[$#>%\]]\s*/)
+      console.log('TerminalBuddy Debug - parts:', JSON.stringify(parts))
+      const commandLine = parts[parts.length - 1] || ''
+      console.log('TerminalBuddy Debug - commandLine:', JSON.stringify(commandLine))
+      const firstWord = commandLine.trim().split(/\s+/)[0].toLowerCase()
+      console.log('TerminalBuddy Debug - firstWord:', JSON.stringify(firstWord))
+
+      if (firstWord) {
+        const sheet = this.cheatsheetService.getSheet(firstWord)
+        console.log('TerminalBuddy Debug - sheet found:', sheet ? sheet.id : 'none')
+        if (sheet) {
+          const newContext: BuddyContext = { type: 'cheatsheet', cmd: firstWord }
+          this.tabContexts.set(tab, newContext)
+          if (this.lastActiveTab === tab) {
+            this.zone.run(() => this.context$.next(newContext))
+          }
+          return
+        }
+      }
+
+      // If no matching command, revert to the base OSC dashboard context
+      this.tabContexts.set(tab, this.lastOscContext)
+      if (this.lastActiveTab === tab) {
+        this.zone.run(() => this.context$.next(this.lastOscContext))
+      }
+    } catch (e) {
+      console.error('TerminalBuddy Debug - error:', e)
     }
   }
 
