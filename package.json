@@ -1,6 +1,6 @@
 {
   "name": "tabby-terminal-buddy",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A context-aware companion panel for Tabby Terminal — shows VI/Nano cheat sheets and your custom dashboard.",
   "keywords": [
     "tabby-plugin",
