@@ -13,11 +13,11 @@ The panel automatically switches between:
 
 | 🖥️ Companion Dashboard | 📋 Context-Aware Cheat Sheet | 📝 Freeform Notes |
 |:---:|:---:|:---:|
-| ![Companion Dashboard](screenshots/CustomDashboard.bmp) | ![Context-Aware Cheat Sheet](screenshots/Context%20Aware%20Information.bmp) | ![Freeform Notes](screenshots/OneOffNotes.bmp) |
+| ![Companion Dashboard](https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/screenshots/CustomDashboard.bmp) | ![Context-Aware Cheat Sheet](https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/screenshots/Context%20Aware%20Information.bmp) | ![Freeform Notes](https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/screenshots/OneOffNotes.bmp) |
 
 | ⚙️ Settings UI | 🧩 Cheat Sheet Editor | 🔌 Shell Integration Prompt |
 |:---:|:---:|:---:|
-| ![Settings UI](screenshots/CustomCheatSheet.bmp) | ![Cheat Sheet Editor](screenshots/EditingCheatSheet.bmp) | ![Waiting for Shell Integration](screenshots/Waiting%20for%20shell%20integration.bmp) |
+| ![Settings UI](https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/screenshots/CustomCheatSheet.bmp) | ![Cheat Sheet Editor](https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/screenshots/EditingCheatSheet.bmp) | ![Waiting for Shell Integration](https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/screenshots/Waiting%20for%20shell%20integration.bmp) |
 
 ---
 
