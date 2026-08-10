@@ -1,97 +1,179 @@
 <div class="tb-settings">
-  <h3 class="tb-settings-title">⚡ TerminalBuddy — Custom Cheat Sheets</h3>
-
-  <!-- Sheet list view -->
-  <div *ngIf="!editingSheet">
-    <p class="tb-settings-hint">
-      Add custom cheat sheets for any terminal program. They take priority over built-in sheets.
-    </p>
-
-    <div class="tb-sheet-list">
-      <div class="tb-sheet-item" *ngFor="let sheet of customSheets; let i = index">
-        <div class="tb-sheet-info">
-          <span class="tb-sheet-name">{{ sheet.title }}</span>
-          <span class="tb-sheet-triggers">
-            <code *ngFor="let t of sheet.triggers">{{ t }}</code>
-          </span>
-        </div>
-        <div class="tb-sheet-actions">
-          <button class="btn-sm btn-edit" (click)="editSheet(sheet)">Edit</button>
-          <button class="btn-sm btn-delete" (click)="deleteSheet(i)">Delete</button>
-        </div>
-      </div>
-
-      <div class="tb-empty-list" *ngIf="customSheets.length === 0">
-        No custom cheat sheets yet.
-      </div>
-    </div>
-
-    <button class="btn-add" (click)="addSheet()">+ Add Cheat Sheet</button>
+  <div class="tb-settings-header">
+    <h3 class="tb-settings-title">⚡ TerminalBuddy Configuration</h3>
+    <button class="btn-sm btn-reset" (click)="resetDefaults()" title="Reset cheat sheets and sections to defaults">Reset Defaults</button>
   </div>
 
-  <!-- Sheet edit view -->
-  <div *ngIf="editingSheet" class="tb-edit-form">
-    <div class="tb-form-row">
-      <label>Sheet Title</label>
-      <input [(ngModel)]="editingSheet.title" placeholder="e.g. htop" />
-    </div>
+  <!-- Main View Navigation Tabs -->
+  <div class="tb-main-tabs" *ngIf="!editingSheet && !editingSection">
+    <button class="tb-main-tab" [class.active]="activeTab === 'sheets'" (click)="activeTab = 'sheets'">
+      📑 Cheat Sheets ({{ customSheets.length }})
+    </button>
+    <button class="tb-main-tab" [class.active]="activeTab === 'sections'" (click)="activeTab = 'sections'">
+      🧩 Section Library ({{ sections.length }})
+    </button>
+  </div>
 
-    <!-- Triggers -->
-    <div class="tb-form-section">
-      <label>Trigger Commands</label>
-      <p class="tb-form-hint">Commands that activate this sheet (e.g. "htop", "python3")</p>
-      <div class="tb-tags">
-        <span class="tb-tag" *ngFor="let t of editingSheet.triggers; let i = index">
-          {{ t }} <button (click)="removeTrigger(i)">✕</button>
-        </span>
-      </div>
-      <div class="tb-add-row">
-        <input [(ngModel)]="newTriggerInput" placeholder="command name" (keyup.enter)="addTrigger()" />
-        <button class="btn-sm btn-add-inline" (click)="addTrigger()">Add</button>
-      </div>
-    </div>
+  <!-- ==================== TAB 1: CHEAT SHEETS ==================== -->
+  <div *ngIf="activeTab === 'sheets'">
+    <!-- Cheat Sheet List View -->
+    <div *ngIf="!editingSheet">
+      <p class="tb-settings-hint">
+        Manage cheat sheets triggered by terminal commands. Assign reusable sections from the Section Library to any sheet.
+      </p>
 
-    <!-- Sections -->
-    <div class="tb-form-section">
-      <label>Sections</label>
-      <div class="tb-section-tabs">
-        <button
-          class="tb-section-tab"
-          [class.active]="activeSection === i"
-          *ngFor="let section of editingSheet.sections; let i = index"
-          (click)="activeSection = i">
-          {{ section.title }}
-        </button>
-        <button class="tb-section-tab tb-add-section" (click)="addSection()">+</button>
-      </div>
-
-      <div class="tb-section-edit" *ngIf="editingSheet.sections[activeSection] as section">
-        <div class="tb-form-row">
-          <label>Section Title</label>
-          <input [(ngModel)]="section.title" placeholder="e.g. Navigation" />
+      <div class="tb-sheet-list">
+        <div class="tb-sheet-item" *ngFor="let sheet of customSheets; let i = index">
+          <div class="tb-sheet-info">
+            <span class="tb-sheet-name">{{ sheet.title }}</span>
+            <div class="tb-sheet-meta">
+              <span class="tb-sheet-triggers">
+                <code *ngFor="let t of sheet.triggers">{{ t }}</code>
+              </span>
+              <span class="tb-badge-count">
+                {{ sheet.sectionIds?.length || 0 }} sections assigned
+              </span>
+            </div>
+          </div>
+          <div class="tb-sheet-actions">
+            <button class="btn-sm btn-edit" (click)="editSheet(sheet)">Edit</button>
+            <button class="btn-sm btn-delete" (click)="deleteSheet(i)">Delete</button>
+          </div>
         </div>
 
+        <div class="tb-empty-list" *ngIf="customSheets.length === 0">
+          No cheat sheets created yet. Click below to add one or "Reset Defaults".
+        </div>
+      </div>
+
+      <button class="btn-add" (click)="addSheet()">+ Add Cheat Sheet</button>
+    </div>
+
+    <!-- Cheat Sheet Edit Form View -->
+    <div *ngIf="editingSheet" class="tb-edit-form">
+      <div class="tb-form-row">
+        <label>Sheet Title</label>
+        <input [(ngModel)]="editingSheet.title" placeholder="e.g. Docker Cheat Sheet" />
+      </div>
+
+      <!-- Triggers -->
+      <div class="tb-form-section">
+        <label>Trigger Commands</label>
+        <p class="tb-form-hint">Terminal commands that trigger this sheet (e.g. "docker", "htop", "python3")</p>
+        <div class="tb-tags">
+          <span class="tb-tag" *ngFor="let t of editingSheet.triggers; let i = index">
+            {{ t }} <button (click)="removeTrigger(i)">✕</button>
+          </span>
+        </div>
+        <div class="tb-add-row">
+          <input [(ngModel)]="newTriggerInput" placeholder="command name" (keyup.enter)="addTrigger()" />
+          <button class="btn-sm btn-add-inline" (click)="addTrigger()">Add Trigger</button>
+        </div>
+      </div>
+
+      <!-- Information & Notes -->
+      <div class="tb-form-row">
+        <label>Information & Custom Notes (Freeform Text)</label>
+        <p class="tb-form-hint">Type or paste custom documentation or quick notes to display in the companion panel</p>
+        <textarea
+          class="tb-textarea"
+          [(ngModel)]="editingSheet.content"
+          rows="3"
+          placeholder="Type cheat sheet info, usage notes, flags, or example commands here...">
+        </textarea>
+      </div>
+
+      <!-- Assign Sections -->
+      <div class="tb-form-section">
+        <div class="tb-section-header-row">
+          <label>Assigned Sections (From Section Library)</label>
+          <button class="btn-sm btn-add-inline" (click)="addSection(true); activeTab = 'sections'">+ Create & Assign New Section</button>
+        </div>
+        <p class="tb-form-hint">Select existing sections from your library to include on this cheat sheet:</p>
+
+        <div class="tb-section-picker">
+          <div
+            class="tb-section-chip"
+            [class.selected]="isSectionAssigned(sec.id)"
+            *ngFor="let sec of sections"
+            (click)="toggleSectionAssignment(sec.id)">
+            <input type="checkbox" [checked]="isSectionAssigned(sec.id)" (click)="$event.stopPropagation(); toggleSectionAssignment(sec.id)" />
+            <div class="tb-chip-info">
+              <span class="tb-chip-title">{{ sec.title }}</span>
+              <span class="tb-chip-count">{{ sec.keys.length }} items</span>
+            </div>
+          </div>
+
+          <div class="tb-empty-list" *ngIf="sections.length === 0">
+            No sections in library. Click "+ Create & Assign New Section" to build one!
+          </div>
+        </div>
+      </div>
+
+      <div class="tb-form-actions">
+        <button class="btn-save" (click)="saveSheet()">Save Sheet</button>
+        <button class="btn-cancel" (click)="cancelSheetEdit()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 2: SECTIONS LIBRARY ==================== -->
+  <div *ngIf="activeTab === 'sections'">
+    <!-- Section List View -->
+    <div *ngIf="!editingSection">
+      <p class="tb-settings-hint">
+        Create and edit standalone sections independently. Sections can be assigned to multiple cheat sheets.
+      </p>
+
+      <div class="tb-sheet-list">
+        <div class="tb-sheet-item" *ngFor="let sec of sections; let i = index">
+          <div class="tb-sheet-info">
+            <span class="tb-sheet-name">{{ sec.title }}</span>
+            <span class="tb-badge-count">{{ sec.keys.length }} keybinding entries</span>
+          </div>
+          <div class="tb-sheet-actions">
+            <button class="btn-sm btn-edit" (click)="editSection(sec)">Edit</button>
+            <button class="btn-sm btn-delete" (click)="deleteSection(i)">Delete</button>
+          </div>
+        </div>
+
+        <div class="tb-empty-list" *ngIf="sections.length === 0">
+          No sections in library yet. Click below to add a standalone section.
+        </div>
+      </div>
+
+      <button class="btn-add" (click)="addSection()">+ Add Standalone Section</button>
+    </div>
+
+    <!-- Section Edit Form View -->
+    <div *ngIf="editingSection" class="tb-edit-form">
+      <div class="tb-form-row">
+        <label>Section Title</label>
+        <input [(ngModel)]="editingSection.title" placeholder="e.g. Navigation / Shortcuts" />
+      </div>
+
+      <!-- Keybindings List -->
+      <div class="tb-form-section">
+        <label>Keybindings & Commands</label>
         <div class="tb-key-list">
-          <div class="tb-key-row" *ngFor="let key of section.keys; let ki = index">
-            <code>{{ key.key }}</code>
-            <span>{{ key.description }}</span>
-            <button class="btn-remove" (click)="removeKey(activeSection, ki)">✕</button>
+          <div class="tb-key-row" *ngFor="let key of editingSection.keys; let ki = index">
+            <input class="input-key" [(ngModel)]="key.key" placeholder="Key / Command" />
+            <input class="input-desc" [(ngModel)]="key.description" placeholder="Description" />
+            <button class="btn-remove" (click)="removeKey(ki)" title="Delete key entry">✕</button>
           </div>
         </div>
 
         <div class="tb-add-key-row">
-          <input [(ngModel)]="newKeyInput" placeholder="Key (e.g. Ctrl+C)" />
-          <input [(ngModel)]="newDescInput" placeholder="Description" (keyup.enter)="addKey()" />
-          <button class="btn-sm btn-add-inline" (click)="addKey()">Add</button>
+          <input [(ngModel)]="newKeyInput" placeholder="Key (e.g. Ctrl+C or docker ps)" />
+          <input [(ngModel)]="newDescInput" placeholder="Description (e.g. List running containers)" (keyup.enter)="addKey()" />
+          <button class="btn-sm btn-add-inline" (click)="addKey()">Add Entry</button>
         </div>
-
-        <button class="btn-sm btn-delete" (click)="removeSection(activeSection)">Remove Section</button>
       </div>
-    </div>
 
-    <div class="tb-form-actions">
-      <button class="btn-save" (click)="saveSheet()">Save Sheet</button>
-      <button class="btn-cancel" (click)="cancelEdit()">Cancel</button>
+      <div class="tb-form-actions">
+        <button class="btn-save" (click)="saveSection()">Save Section</button>
+        <button class="btn-cancel" (click)="cancelSectionEdit()">Cancel</button>
+      </div>
     </div>
   </div>
 </div>

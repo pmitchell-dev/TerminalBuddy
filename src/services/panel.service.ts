@@ -11,14 +11,9 @@ import { BuddyPanelComponent } from '../components/buddy-panel.component'
 /**
  * PanelService
  *
- * Bootstraps the BuddyPanelComponent into the live DOM.
- * The panel is positioned as a fixed right-side drawer using CSS,
- * so it overlays on top of Tabby's content without needing to inject
- * into the exact DOM hierarchy.
- *
- * mount() is called from the toolbar button provider constructor —
- * that constructor runs early because ToolbarButtonProvider is a
- * registered multi-provider that Tabby iterates at startup.
+ * Bootstraps the BuddyPanelComponent into the live DOM on demand.
+ * The panel is positioned as an overlay drawer that stays hidden until toggled,
+ * preventing layout interference with Tabby's startup window or grid containers.
  */
 @Injectable({ providedIn: 'root' })
 export class PanelService {
@@ -31,11 +26,9 @@ export class PanelService {
     private zone: NgZone,
   ) {}
 
-  /** Mount the panel into the DOM. Safe to call multiple times. */
+  /** Mount the panel into the DOM on demand. Safe to call multiple times. */
   mount (): void {
     if (this.panelRef) return
-
-    console.log('[TerminalBuddy] PanelService.mount() called')
 
     try {
       const factory = this.resolver.resolveComponentFactory(BuddyPanelComponent)
@@ -45,21 +38,19 @@ export class PanelService {
       this.appRef.attachView(this.panelRef.hostView)
 
       const domElem = (this.panelRef.hostView as any).rootNodes[0] as HTMLElement
-
-      // Apply positioning styles DIRECTLY to the host element.
-      // Angular's :host { position: fixed } in component SCSS is not reliable
-      // for dynamically-created components — the scoped style may not apply.
-      // Inline styles guarantee the panel is visible regardless.
       const savedWidth = localStorage.getItem('tb-panel-width') || '320'
 
+      // Apply fixed overlay positioning styles directly.
+      // Default to display: none and pointer-events: none when mounted
+      // so it never interferes with Tabby's startup or tab layouts.
       domElem.style.cssText = [
         'position: fixed',
         'top: 38px',
         'right: 0',
         `width: ${savedWidth}px`,
         'height: calc(100vh - 38px)',
-        'z-index: 9999',
-        'display: flex',
+        'z-index: 99999',
+        'display: none',
         'flex-direction: column',
         'background: var(--theme-bg-more-2, #181825)',
         'border-left: 1px solid rgba(255,255,255,0.1)',
@@ -67,18 +58,14 @@ export class PanelService {
         'color: var(--body-color, #cdd6f4)',
         'font-family: "JetBrains Mono", "Fira Code", monospace',
         'font-size: 12px',
+        'pointer-events: none',
       ].join(';')
 
-
-
       document.body.appendChild(domElem)
-
-      console.log('[TerminalBuddy] Panel mounted into DOM', domElem)
     } catch (e) {
       console.error('[TerminalBuddy] Panel mount failed:', e)
     }
   }
-
 
   /** Toggle the panel's visible state */
   toggle (): void {
@@ -90,7 +77,7 @@ export class PanelService {
       instance.isVisible = !instance.isVisible
       const domElem = (this.panelRef!.hostView as any).rootNodes[0] as HTMLElement
       domElem.style.display = instance.isVisible ? 'flex' : 'none'
-      console.log('[TerminalBuddy] Panel toggled, isVisible=', instance.isVisible)
+      domElem.style.pointerEvents = instance.isVisible ? 'auto' : 'none'
     })
   }
 
@@ -102,6 +89,7 @@ export class PanelService {
       this.panelRef!.instance.isVisible = true
       const domElem = (this.panelRef!.hostView as any).rootNodes[0] as HTMLElement
       domElem.style.display = 'flex'
+      domElem.style.pointerEvents = 'auto'
     })
   }
 
@@ -112,8 +100,8 @@ export class PanelService {
         this.panelRef!.instance.isVisible = false
         const domElem = (this.panelRef!.hostView as any).rootNodes[0] as HTMLElement
         domElem.style.display = 'none'
+        domElem.style.pointerEvents = 'none'
       })
     }
   }
 }
-

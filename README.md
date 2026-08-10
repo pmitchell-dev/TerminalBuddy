@@ -12,10 +12,13 @@ The panel automatically switches between:
 
 ## Screenshots
 
-| 🖥️ Companion Dashboard | 📋 VI/Vim Cheat Sheet | ⚙️ Custom Cheat Sheets |
+| 🖥️ Companion Dashboard | 📋 Context-Aware Cheat Sheet | 📝 Freeform Notes |
 |:---:|:---:|:---:|
-| ![Companion Dashboard](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-20_08-50-11_AM_32ac6c.png) | ![Vim Cheat Sheet](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-20_08-51-15_AM_7703f6.png) | ![Settings](https://raw.githubusercontent.com/pmitchell-dev/ScreenShotPub/main/screenshots/screenshot_2026-05-20_08-51-39_AM_dceccc.png) |
+| ![Companion Dashboard](screenshots/CustomDashboard.bmp) | ![Context-Aware Cheat Sheet](screenshots/Context%20Aware%20Information.bmp) | ![Freeform Notes](screenshots/OneOffNotes.bmp) |
 
+| ⚙️ Settings UI | 🧩 Custom Cheat Sheets Editor | 🔌 Shell Integration Prompt |
+|:---:|:---:|:---:|
+| ![Settings UI](screenshots/ConfigSettings.bmp) | ![Custom Cheat Sheets](screenshots/CustomCheatSheet.bmp) | ![Waiting for Shell Integration](screenshots/Waiting%20for%20shell%20integration.bmp) |
 
 ---
 

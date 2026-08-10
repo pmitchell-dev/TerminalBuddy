@@ -6,10 +6,16 @@
     {{ sheet.title }}
   </div>
 
-  <!-- Sections -->
+  <!-- Content & Sections -->
   <div class="cs-scroll">
+    <!-- Freeform Information / Custom Notes block -->
+    <div class="cs-custom-content" *ngIf="sheet.content">
+      <pre class="cs-content-text">{{ sheet.content }}</pre>
+    </div>
+
+    <!-- Structured Sections -->
     <div class="cs-section" *ngFor="let section of sheet.sections">
-      <div class="cs-section-title">{{ section.title }}</div>
+      <div class="cs-section-title" *ngIf="section.title">{{ section.title }}</div>
       <div class="cs-row" *ngFor="let item of section.keys">
         <span class="cs-key">{{ item.key }}</span>
         <span class="cs-desc">{{ item.description }}</span>

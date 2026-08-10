@@ -17,8 +17,7 @@ const OSC_REGEX = /\x1b\]7701;([^\x07\x1b]*?)(?:\x07|\x1b\\)/g
  * Intercepts OSC 7701 sequences emitted by the remote shell integration script
  * and translates them into BuddyContext updates for the panel.
  *
- * Handles layout nesting within SplitTabComponent by recursively resolving the
- * focused leaf tab, and subscribing to focusChanged$ to handle pane switches.
+ * Throttles line buffer inspection to prevent terminal latency or UI thread load.
  */
 @Injectable({ providedIn: 'root' })
 export class ContextService {
@@ -28,6 +27,7 @@ export class ContextService {
   private tabOscContexts = new WeakMap<any, BuddyContext>()
   private lastActiveTab: any = null
   private lastOscContext: BuddyContext = { type: 'idle' }
+  private lineCheckTimer: any = null
 
   constructor (
     private app: AppService,
@@ -40,11 +40,9 @@ export class ContextService {
 
   private onTabChange (): void {
     let tab = this.app.activeTab
-    console.log('TerminalBuddy Debug - onTabChange called. activeTab:', tab ? tab.constructor.name : 'none')
     const cleanups: (() => void)[] = []
 
-    // Recursively resolve the active sub-tab if we are inside a SplitTabComponent.
-    // We subscribe to focusChanged$ on every level of SplitTabComponent so we catch pane switches.
+    // Recursively resolve active sub-tab inside SplitTabComponent
     while (tab && (tab.constructor.name === 'SplitTabComponent' || 'focusChanged$' in tab)) {
       const splitTab = tab as any
       if (typeof splitTab.focusChanged$?.subscribe === 'function') {
@@ -55,7 +53,6 @@ export class ContextService {
     }
 
     if (tab !== this.lastActiveTab) {
-      // Perform cleanup of any previous subscriptions
       if (this.currentCleanup) {
         try { this.currentCleanup() } catch {}
         this.currentCleanup = null
@@ -63,7 +60,6 @@ export class ContextService {
 
       this.lastActiveTab = tab
 
-      // Restore the context of the newly active tab
       const restoredContext = tab ? (this.tabContexts.get(tab) ?? { type: 'idle' as const }) : { type: 'idle' as const }
       this.lastOscContext = tab ? (this.tabOscContexts.get(tab) ?? { type: 'idle' as const }) : { type: 'idle' as const }
       this.zone.run(() => this.context$.next(restoredContext))
@@ -78,7 +74,6 @@ export class ContextService {
       return
     }
 
-    // Check if the resolved leaf tab is a terminal tab
     const isTerminalTab = 'frontendReady$' in tab || 'sessionChanged$' in tab
     if (!isTerminalTab) {
       const origCleanup = this.currentCleanup
@@ -89,7 +84,6 @@ export class ContextService {
       return
     }
 
-    // Try to bind to the xterm instance
     const xterm = (tab as any)?.frontend?.xterm
     if (xterm) {
       this.bindToTerminal(xterm, tab)
@@ -126,7 +120,6 @@ export class ContextService {
   }
 
   private bindToTerminal (xterm: any, tab: any): void {
-    console.log('TerminalBuddy Debug - bindToTerminal called. tab type:', tab ? tab.constructor.name : 'none', 'has xterm:', !!xterm)
     if (this.currentCleanup) {
       try { this.currentCleanup() } catch {}
       this.currentCleanup = null
@@ -147,31 +140,33 @@ export class ContextService {
       oscHooked = true
     }
 
-    // ── Hook xterm.write to handle OSC fallback and check active line ──────
+    // ── Hook xterm.write with debounced line inspection ────────────────────
     const origWrite = xterm.write.bind(xterm)
     xterm.write = (data: string | Uint8Array, callback?: () => void) => {
       try {
-        const str = typeof data === 'string'
-          ? data
-          : data instanceof Uint8Array
-            ? new TextDecoder().decode(data)
-            : null
-        
-        if (str && !oscHooked) {
-          this.parseOscSequences(tab, str)
+        if (!oscHooked) {
+          const str = typeof data === 'string'
+            ? data
+            : data instanceof Uint8Array && data.includes(0x1b)
+              ? new TextDecoder().decode(data)
+              : null
+
+          if (str && str.includes('\x1b]7701;')) {
+            this.parseOscSequences(tab, str)
+          }
         }
 
-        // Check active line on screen updates
-        setTimeout(() => this.checkCurrentLine(xterm, tab), 20)
+        // Schedule a lightweight debounced line check
+        this.scheduleLineCheck(xterm, tab)
       } catch {}
       return origWrite(data, callback)
     }
     cleanups.push(() => { xterm.write = origWrite })
 
-    // ── Listen to keyboard inputs for immediate response ───────────────────
+    // ── Listen to key input with debounced line inspection ────────────────
     if (typeof xterm.onData === 'function') {
       const disposable = xterm.onData(() => {
-        setTimeout(() => this.checkCurrentLine(xterm, tab), 20)
+        this.scheduleLineCheck(xterm, tab)
       })
       cleanups.push(() => {
         try { disposable?.dispose?.() } catch {}
@@ -179,10 +174,23 @@ export class ContextService {
     }
 
     this.currentCleanup = () => {
+      if (this.lineCheckTimer) {
+        clearTimeout(this.lineCheckTimer)
+        this.lineCheckTimer = null
+      }
       for (const cleanup of cleanups) {
         try { cleanup() } catch {}
       }
     }
+  }
+
+  private scheduleLineCheck (xterm: any, tab: any): void {
+    if (this.lineCheckTimer) {
+      clearTimeout(this.lineCheckTimer)
+    }
+    this.lineCheckTimer = setTimeout(() => {
+      this.checkCurrentLine(xterm, tab)
+    }, 150)
   }
 
   private parseOscSequences (tab: any, data: string): void {
@@ -218,7 +226,6 @@ export class ContextService {
   }
 
   private checkCurrentLine (xterm: any, tab: any): void {
-    console.log('TerminalBuddy Debug - checkCurrentLine entered. lastOscContext:', JSON.stringify(this.lastOscContext))
     if (this.lastOscContext?.type !== 'dashboard') {
       return
     }
@@ -232,19 +239,12 @@ export class ContextService {
       if (!line) return
 
       const lineText = line.translateToString(true)
-      console.log('TerminalBuddy Debug - lineText:', JSON.stringify(lineText))
-
-      // Split the line on common prompt symbols to find the input command
       const parts = lineText.split(/[$#>%\]]\s*/)
-      console.log('TerminalBuddy Debug - parts:', JSON.stringify(parts))
       const commandLine = parts[parts.length - 1] || ''
-      console.log('TerminalBuddy Debug - commandLine:', JSON.stringify(commandLine))
       const firstWord = commandLine.trim().split(/\s+/)[0].toLowerCase()
-      console.log('TerminalBuddy Debug - firstWord:', JSON.stringify(firstWord))
 
       if (firstWord) {
         const sheet = this.cheatsheetService.getSheet(firstWord)
-        console.log('TerminalBuddy Debug - sheet found:', sheet ? sheet.id : 'none')
         if (sheet) {
           const newContext: BuddyContext = { type: 'cheatsheet', cmd: firstWord }
           this.tabContexts.set(tab, newContext)
@@ -255,14 +255,12 @@ export class ContextService {
         }
       }
 
-      // If no matching command, revert to the base OSC dashboard context
+      // If no matching command, revert to base OSC dashboard context
       this.tabContexts.set(tab, this.lastOscContext)
       if (this.lastActiveTab === tab) {
         this.zone.run(() => this.context$.next(this.lastOscContext))
       }
-    } catch (e) {
-      console.error('TerminalBuddy Debug - error:', e)
-    }
+    } catch {}
   }
 
   private parseKV (payload: string): Record<string, string> {
