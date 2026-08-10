@@ -46,33 +46,38 @@ npm pack
 
 ---
 
-### Part 2 — Install Shell Integration on Remote Machines (Linux)
+### Part 2 — Install Shell Integration (Linux & Windows)
 
-Run this **one-liner on each remote Linux machine** over SSH:
+**For Remote Linux Machines (over SSH):**
+
+Run this **one-liner on each remote Linux machine**:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/shell-integration/install.sh | bash
 ```
 
-Then reload your shell:
+Then reload your shell (`source ~/.bashrc`).
 
-```bash
-source ~/.bashrc
+**For Local Windows Machines (PowerShell):**
+
+Run this **one-liner in PowerShell**:
+
+```powershell
+iex (irm https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/shell-integration/install.ps1)
 ```
 
-That's it. The next time you SSH in via Tabby, the panel activates automatically.
+Then reload your PowerShell session (`. $PROFILE`).
 
 ---
 
 ### Part 3 — Set Up Your Dashboard (Optional)
 
-Create a plain text file on your remote machine at:
+TerminalBuddy displays your custom `dashboard.txt` file in the companion panel whenever you're at the shell prompt:
 
-```
-~/dashboard/dashboard.txt
-```
+- **Linux**: `~/dashboard/dashboard.txt`
+- **Windows (Shared for all users)**: `C:\ProgramData\TerminalBuddy\dashboard.txt`
 
-TerminalBuddy will display this file in the panel whenever you're at the shell prompt. You can use any text — system stats, server info, custom commands, etc.
+You can use any text — system stats, server info, task status, custom commands, etc.
 
 > **Note:** ANSI color codes in `dashboard.txt` are automatically stripped for clean display.
 

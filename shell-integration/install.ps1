@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "⚡ Installing TerminalBuddy PowerShell Integration..." -ForegroundColor Purple
+Write-Host "⚡ Installing TerminalBuddy PowerShell Integration..." -ForegroundColor Magenta
 
 # 1. Create Machine-Wide ProgramData Directory for Shared Dashboard
 $programDataDir = Join-Path $env:ProgramData "TerminalBuddy"
