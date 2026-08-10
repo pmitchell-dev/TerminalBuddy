@@ -4,6 +4,8 @@
   "description": "A context-aware companion panel for Tabby Terminal — shows VI/Nano cheat sheets and your custom dashboard.",
   "keywords": [
     "tabby-plugin",
+    "terminus-plugin",
+    "terminal-buddy",
     "terminal",
     "cheatsheet",
     "vi",
