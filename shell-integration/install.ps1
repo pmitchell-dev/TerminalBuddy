@@ -1,9 +1,9 @@
-# TerminalBuddy Windows PowerShell Integration Installer
-# =======================================================
+# TerminalBuddy Windows Shell Integration Installer
+# ===================================================
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "⚡ Installing TerminalBuddy PowerShell Integration..." -ForegroundColor Magenta
+Write-Host "[+] Installing TerminalBuddy Windows Shell Integration..." -ForegroundColor Magenta
 
 # 1. Create Machine-Wide ProgramData Directory for Shared Dashboard
 $programDataDir = Join-Path $env:ProgramData "TerminalBuddy"
@@ -13,72 +13,28 @@ if (!(Test-Path $programDataDir)) {
 
 $dashboardFile = Join-Path $programDataDir "dashboard.txt"
 if (!(Test-Path $dashboardFile)) {
-    $sampleText = @"
-===================================================
-⚡ TerminalBuddy Dashboard
-Machine: $env:COMPUTERNAME
-OS: $(Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Caption)
-===================================================
-Shared dashboard text file location:
-C:\ProgramData\TerminalBuddy\dashboard.txt
-"@
+    $osName = $(Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Caption)
+    $sampleText = "===================================================`nTerminalBuddy Dashboard`nMachine: $env:COMPUTERNAME`nOS: $osName`n===================================================`nShared dashboard text file location:`nC:\ProgramData\TerminalBuddy\dashboard.txt"
     Set-Content -Path $dashboardFile -Value $sampleText -Encoding UTF8
 }
 
-# 2. Save terminalbuddy.ps1 to user config directory
+# 2. Setup PowerShell Integration
 $tbDir = Join-Path $env:USERPROFILE ".config\terminalbuddy"
 if (!(Test-Path $tbDir)) {
     New-Item -ItemType Directory -Path $tbDir -Force | Out-Null
 }
 
-$scriptPath = Join-Path $tbDir "terminalbuddy.ps1"
-$scriptContent = @'
-function __tb_prompt {
-    $cwd = $ExecutionContext.SessionState.Path.CurrentLocation.Path
-    $dashPathProgramData = Join-Path $env:ProgramData "TerminalBuddy\dashboard.txt"
-    $dashPathUserProfile = Join-Path $env:USERPROFILE "dashboard\dashboard.txt"
-    $dashB64 = ""
+$psScriptPath = Join-Path $tbDir "terminalbuddy.ps1"
+$psSourceUrl = "https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/shell-integration/terminalbuddy.ps1"
 
-    $targetDashPath = $null
-    if (Test-Path $dashPathProgramData) {
-        $targetDashPath = $dashPathProgramData
-    } elseif (Test-Path $dashPathUserProfile) {
-        $targetDashPath = $dashPathUserProfile
-    }
-
-    if ($targetDashPath) {
-        $raw = Get-Content $targetDashPath -Raw -ErrorAction SilentlyContinue
-        if ($raw) {
-            $clean = $raw -replace "\x1B\[[0-9;]*[a-zA-Z]", ""
-            $dashB64 = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($clean))
-        }
-    }
-
-    $e = [char]27
-    $a = [char]7
-    Write-Host -NoNewline "$e]7701;prompt;cwd=$cwd;dashboard=$dashB64$a"
+$localPsScript = Join-Path $PSScriptRoot "terminalbuddy.ps1"
+if (Test-Path $localPsScript) {
+    Copy-Item -Path $localPsScript -Destination $psScriptPath -Force
+} else {
+    Invoke-WebRequest -Uri $psSourceUrl -OutFile $psScriptPath -UseBasicParsing
 }
 
-if (!(Test-Path variable:__tb_prompt_hooked)) {
-    $global:__tb_prompt_hooked = $true
-    if (Test-Path Function:\prompt) {
-        $oldPrompt = $function:prompt
-        function global:prompt {
-            __tb_prompt
-            & $oldPrompt
-        }
-    } else {
-        function global:prompt {
-            __tb_prompt
-            "PS $($ExecutionContext.SessionState.Path.CurrentLocation.Path)> "
-        }
-    }
-}
-'@
-
-Set-Content -Path $scriptPath -Value $scriptContent -Encoding UTF8
-
-# 3. Add source line to PowerShell Profile ($PROFILE)
+# Add source line to PowerShell Profile ($PROFILE)
 $profilePath = $PROFILE
 if (!(Test-Path $profilePath)) {
     $profileDir = Split-Path $profilePath
@@ -95,12 +51,34 @@ if ($profileContent -notlike "*terminalbuddy.ps1*") {
     Add-Content -Path $profilePath -Value "`n# TerminalBuddy Integration`n$sourceLine"
 }
 
-Write-Host "✅ Installation complete!" -ForegroundColor Green
-Write-Host "📌 Profile updated: $PROFILE" -ForegroundColor Cyan
-Write-Host "📌 Shared Dashboard file: C:\ProgramData\TerminalBuddy\dashboard.txt" -ForegroundColor Yellow
+# 3. Setup CMD / Clink Lua Script for Tabby Command Prompt
+$luaSourceUrl = "https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/shell-integration/terminalbuddy.lua"
+$localLuaScript = Join-Path $PSScriptRoot "terminalbuddy.lua"
+
+$clinkDirs = @(
+    (Join-Path $env:LOCALAPPDATA "clink"),
+    (Join-Path $env:USERPROFILE ".config\clink")
+)
+
+foreach ($cdir in $clinkDirs) {
+    if (!(Test-Path $cdir)) {
+        New-Item -ItemType Directory -Path $cdir -Force | Out-Null
+    }
+    $destLua = Join-Path $cdir "terminalbuddy.lua"
+    if (Test-Path $localLuaScript) {
+        Copy-Item -Path $localLuaScript -Destination $destLua -Force
+    } else {
+        Invoke-WebRequest -Uri $luaSourceUrl -OutFile $destLua -UseBasicParsing
+    }
+}
+
+Write-Host "[+] Installation complete for both PowerShell and CMD (Clink)!" -ForegroundColor Green
+Write-Host "[*] PowerShell Profile updated: $PROFILE" -ForegroundColor Cyan
+Write-Host "[*] CMD Clink script installed: $env:LOCALAPPDATA\clink\terminalbuddy.lua" -ForegroundColor Cyan
+Write-Host "[*] Shared Dashboard file: C:\ProgramData\TerminalBuddy\dashboard.txt" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "⚠️ IMPORTANT REMINDER:" -ForegroundColor Magenta
+Write-Host "[!] IMPORTANT REMINDER:" -ForegroundColor Magenta
 Write-Host "Please set up a scheduled script or task to periodically update the information in:" -ForegroundColor Yellow
 Write-Host "   C:\ProgramData\TerminalBuddy\dashboard.txt" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Reload your PowerShell session (or run: . `$PROFILE) to activate TerminalBuddy." -ForegroundColor White
+Write-Host "Open a new PowerShell or CMD tab in Tabby to start using TerminalBuddy locally." -ForegroundColor White
