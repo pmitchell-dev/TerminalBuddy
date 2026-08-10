@@ -27,8 +27,8 @@ if (!(Test-Path $tbDir)) {
 $psScriptPath = Join-Path $tbDir "terminalbuddy.ps1"
 $psSourceUrl = "https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/shell-integration/terminalbuddy.ps1"
 
-$localPsScript = Join-Path $PSScriptRoot "terminalbuddy.ps1"
-if (Test-Path $localPsScript) {
+$localPsScript = if (![string]::IsNullOrEmpty($PSScriptRoot)) { Join-Path $PSScriptRoot "terminalbuddy.ps1" } else { $null }
+if ($localPsScript -and (Test-Path $localPsScript)) {
     Copy-Item -Path $localPsScript -Destination $psScriptPath -Force
 } else {
     Invoke-WebRequest -Uri $psSourceUrl -OutFile $psScriptPath -UseBasicParsing
@@ -53,7 +53,7 @@ if ($profileContent -notlike "*terminalbuddy.ps1*") {
 
 # 3. Setup CMD / Clink Lua Script for Tabby Command Prompt
 $luaSourceUrl = "https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/shell-integration/terminalbuddy.lua"
-$localLuaScript = Join-Path $PSScriptRoot "terminalbuddy.lua"
+$localLuaScript = if (![string]::IsNullOrEmpty($PSScriptRoot)) { Join-Path $PSScriptRoot "terminalbuddy.lua" } else { $null }
 
 $clinkDirs = @(
     (Join-Path $env:LOCALAPPDATA "clink"),
@@ -65,7 +65,7 @@ foreach ($cdir in $clinkDirs) {
         New-Item -ItemType Directory -Path $cdir -Force | Out-Null
     }
     $destLua = Join-Path $cdir "terminalbuddy.lua"
-    if (Test-Path $localLuaScript) {
+    if ($localLuaScript -and (Test-Path $localLuaScript)) {
         Copy-Item -Path $localLuaScript -Destination $destLua -Force
     } else {
         Invoke-WebRequest -Uri $luaSourceUrl -OutFile $destLua -UseBasicParsing
