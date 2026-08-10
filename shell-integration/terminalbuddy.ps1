@@ -18,15 +18,18 @@ function __tb_prompt {
         $raw = Get-Content $targetDashPath -Raw -ErrorAction SilentlyContinue
         if ($raw) {
             # Strip ANSI escape codes
-            $clean = $raw -replace "\x1B\[[0-9;]*[a-zA-Z]", ""
+            $esc = [char]27
+            $clean = $raw -replace "$esc\[[0-9;]*[a-zA-Z]", ""
             $dashB64 = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($clean))
         }
     }
 
-    # Emit TerminalBuddy OSC sequence (OSC 7701)
+    # Emit TerminalBuddy OSC sequence (OSC 7701) directly to stdout
     $e = [char]27
     $a = [char]7
-    Write-Host -NoNewline "$e]7701;prompt;cwd=$cwd;dashboard=$dashB64$a"
+    $seq = "$e]7701;prompt;cwd=$cwd;dashboard=$dashB64$a"
+    [Console]::Out.Write($seq)
+    [Console]::Out.Flush()
 }
 
 if (!(Test-Path variable:__tb_prompt_hooked)) {

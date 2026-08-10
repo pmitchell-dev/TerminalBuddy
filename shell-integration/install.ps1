@@ -34,21 +34,31 @@ if ($localPsScript -and (Test-Path $localPsScript)) {
     Invoke-WebRequest -Uri $psSourceUrl -OutFile $psScriptPath -UseBasicParsing
 }
 
-# Add source line to PowerShell Profile ($PROFILE)
-$profilePath = $PROFILE
-if (!(Test-Path $profilePath)) {
-    $profileDir = Split-Path $profilePath
-    if (!(Test-Path $profileDir)) {
-        New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
-    }
-    New-Item -ItemType File -Path $profilePath -Force | Out-Null
-}
+# Add source line to all PowerShell Profiles (Windows PowerShell 5.1 & PowerShell Core 7+)
+$docsDir = Join-Path $env:USERPROFILE "Documents"
+$possibleProfiles = @(
+    $PROFILE,
+    (Join-Path $docsDir "WindowsPowerShell\Microsoft.PowerShell_profile.ps1"),
+    (Join-Path $docsDir "PowerShell\Microsoft.PowerShell_profile.ps1")
+) | Select-Object -Unique
 
 $sourceLine = "`$tbScript = Join-Path `$env:USERPROFILE '.config\terminalbuddy\terminalbuddy.ps1'; if (Test-Path `$tbScript) { . `$tbScript }"
-$profileContent = Get-Content $profilePath -Raw -ErrorAction SilentlyContinue
 
-if ($profileContent -notlike "*terminalbuddy.ps1*") {
-    Add-Content -Path $profilePath -Value "`n# TerminalBuddy Integration`n$sourceLine"
+foreach ($pPath in $possibleProfiles) {
+    if ($pPath) {
+        $pDir = Split-Path $pPath
+        if (!(Test-Path $pDir)) {
+            New-Item -ItemType Directory -Path $pDir -Force | Out-Null
+        }
+        if (!(Test-Path $pPath)) {
+            New-Item -ItemType File -Path $pPath -Force | Out-Null
+        }
+
+        $pContent = [string](Get-Content $pPath -Raw -ErrorAction SilentlyContinue)
+        if ($pContent -notlike "*terminalbuddy.ps1*") {
+            Add-Content -Path $pPath -Value "`n# TerminalBuddy Integration`n$sourceLine"
+        }
+    }
 }
 
 # 3. Setup CMD / Clink Lua Script for Tabby Command Prompt
