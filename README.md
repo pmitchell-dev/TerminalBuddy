@@ -16,9 +16,9 @@ The panel automatically switches between:
 |:---:|:---:|:---:|
 | ![Companion Dashboard](screenshots/CustomDashboard.bmp) | ![Context-Aware Cheat Sheet](screenshots/Context%20Aware%20Information.bmp) | ![Freeform Notes](screenshots/OneOffNotes.bmp) |
 
-| ⚙️ Settings UI | 🧩 Custom Cheat Sheets Editor | 🔌 Shell Integration Prompt |
+| ⚙️ Settings UI | 🧩 Cheat Sheet Editor | 🔌 Shell Integration Prompt |
 |:---:|:---:|:---:|
-| ![Settings UI](screenshots/ConfigSettings.bmp) | ![Custom Cheat Sheets](screenshots/CustomCheatSheet.bmp) | ![Waiting for Shell Integration](screenshots/Waiting%20for%20shell%20integration.bmp) |
+| ![Settings UI](screenshots/CustomCheatSheet.bmp) | ![Cheat Sheet Editor](screenshots/EditingCheatSheet.bmp) | ![Waiting for Shell Integration](screenshots/Waiting%20for%20shell%20integration.bmp) |
 
 ---
 
