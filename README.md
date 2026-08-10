@@ -1,12 +1,11 @@
 # ⚡ TerminalBuddy
 
-A **Tabby Terminal plugin** that adds a live, context-aware companion panel to your SSH sessions.
+A **Tabby Terminal plugin** that adds a live, context-aware companion panel to your local terminal sessions (PowerShell, CMD) and remote SSH sessions (Linux).
 
 The panel automatically switches between:
-- 📋 **VI / Vim cheat sheet** — when you enter `vi` or `vim`
-- 📋 **Nano cheat sheet** — when you enter `nano`
-- 🖥️ **Your custom dashboard** — when you're at the shell prompt (reads `~/dashboard/dashboard.txt` from the remote machine)
-- ➕ **Custom cheat sheets** — add your own for any program via Settings
+- 📋 **Built-in & Custom cheat sheets** — when you enter commands like `vi`, `nano`, `tar`, `find`, `grep`, etc.
+- 🖥️ **Your custom dashboard** — when you're at the shell prompt (reads `~/dashboard/dashboard.txt` on Linux or `C:\ProgramData\TerminalBuddy\dashboard.txt` on Windows)
+- ➕ **Custom cheat sheets & notes** — add your own for any program or workflow via Settings
 
 ---
 
@@ -95,10 +94,10 @@ Add cheat sheets for any terminal program via **Tabby Settings → TerminalBuddy
 
 ## How It Works
 
-TerminalBuddy uses a small Bash/Zsh hook script on the remote machine that emits custom **OSC escape sequences** into the terminal output stream — the same technique used by iTerm2 Shell Integration and Warp Terminal.
+TerminalBuddy uses a lightweight shell integration script (Bash/Zsh for Linux, PowerShell & Clink Lua for Windows CMD) that emits custom **OSC escape sequences** into the terminal output stream — the same technique used by iTerm2 Shell Integration and Warp Terminal.
 
 When you run a command, the hook sends: `\e]7701;cmd=vi\a`  
-When you return to the prompt, it sends: `\e]7701;prompt;cwd=/home/pi;dashboard=<base64>\a`
+When you return to the prompt, it sends: `\e]7701;prompt;cwd=/home/user;dashboard=<base64>\a`
 
 The Tabby plugin listens for these sequences and updates the panel instantly — no polling, no extra network connections, no ports.
 
