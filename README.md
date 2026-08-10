@@ -110,7 +110,11 @@ The Tabby plugin listens for these sequences and updates the panel instantly —
 |---|---|
 | VI / Vim | `vi`, `vim`, `nvim` |
 | Nano | `nano` |
-| *(more coming)* | — |
+| Tar | `tar` |
+| Find | `find` |
+| Grep | `grep`, `egrep`, `fgrep` |
+| Systemctl | `systemctl`, `journalctl` |
+| Chmod & Chown | `chmod`, `chown` |
 
 ---
 
@@ -139,18 +143,26 @@ terminalbuddy-tabby-plugin/
 │   ├── components/                 # UI components
 │   │   ├── buddy-panel.*           # Main panel (routes between states)
 │   │   ├── cheatsheet.*            # Cheat sheet renderer
-│   │   ├── dashboard.*             # Dashboard stub
+│   │   ├── dashboard.*             # Dashboard component
 │   │   └── settings.*              # Custom cheat sheet settings UI
 │   ├── services/
 │   │   ├── context.service.ts      # OSC sequence parser + state
-│   │   └── cheatsheet.service.ts   # Cheat sheet resolver (built-in + custom)
+│   │   └── cheatsheet.service.ts   # Cheat sheet resolver
 │   ├── providers/                  # Tabby extension point registrations
-│   └── data/                       # Built-in cheat sheet data
+│   └── data/                       # Default cheat sheet definitions
 │       ├── vi.cheatsheet.ts
-│       └── nano.cheatsheet.ts
+│       ├── nano.cheatsheet.ts
+│       ├── tar.cheatsheet.ts
+│       ├── find.cheatsheet.ts
+│       ├── grep.cheatsheet.ts
+│       ├── systemctl.cheatsheet.ts
+│       └── chmod.cheatsheet.ts
 └── shell-integration/
-    ├── terminalbuddy.sh            # Bash/Zsh hook script
-    └── install.sh                  # Remote one-liner installer
+    ├── terminalbuddy.sh            # Linux Bash/Zsh hook script
+    ├── install.sh                  # Linux one-liner installer
+    ├── terminalbuddy.ps1           # Windows PowerShell hook script
+    ├── terminalbuddy.lua           # Windows CMD (Clink) hook script
+    └── install.ps1                 # Windows one-liner installer
 ```
 
 ---
